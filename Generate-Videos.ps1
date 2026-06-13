@@ -31,12 +31,33 @@ Write-Host "[INFO] Checking prerequisites..." -ForegroundColor Yellow
 
 $ffmpeg = Get-Command ffmpeg -ErrorAction SilentlyContinue
 if (!$ffmpeg) {
-    Write-Host "[ERROR] FFmpeg not found" -ForegroundColor Red
-    Write-Host "Install: choco install ffmpeg -y" -ForegroundColor Yellow
-    exit 1
+    Write-Host "[WARNING] FFmpeg not in PATH. Searching common locations..." -ForegroundColor Yellow
+    $commonPaths = @(
+        "C:\Program Files\ffmpeg\bin\ffmpeg.exe",
+        "C:\Program Files (x86)\ffmpeg\bin\ffmpeg.exe",
+        "C:\ProgramData\chocolatey\bin\ffmpeg.exe",
+        "C:\tools\ffmpeg\bin\ffmpeg.exe"
+    )
+    
+    $ffmpegPath = $null
+    foreach ($path in $commonPaths) {
+        if (Test-Path $path) {
+            $ffmpegPath = $path
+            break
+        }
+    }
+    
+    if (!$ffmpegPath) {
+        Write-Host "[ERROR] FFmpeg not found" -ForegroundColor Red
+        Write-Host "Install with: winget install ffmpeg" -ForegroundColor Yellow
+        exit 1
+    }
+}
+else {
+    $ffmpegPath = $ffmpeg.Source
 }
 
-Write-Host "[OK] FFmpeg found" -ForegroundColor Green
+Write-Host "[OK] FFmpeg found at: $ffmpegPath" -ForegroundColor Green
 
 if (!(Test-Path $AudioFolder)) {
     Write-Host "[ERROR] Audio folder not found: $AudioFolder" -ForegroundColor Red
@@ -99,15 +120,21 @@ foreach ($audioFile in $audioFiles) {
     Write-Host "[INFO] Analyzing audio..." -ForegroundColor Gray
     
     try {
-        $ffprobeOutput = & ffprobe -v error `
-            -show_entries format=duration `
-            -of default=noprint_wrappers=1:nokey=1:noinvert_equals=1 `
-            "$audioPath" 2>&1
+        $ffprobePath = $ffmpegPath -replace "ffmpeg.exe", "ffprobe.exe"
+        $ffprobeCmd = "`"$ffprobePath`" -v error -show_entries format=duration -of default=nokey=1 `"$audioPath`" 2>&1"
+        $ffprobeOutput = Invoke-Expression $ffprobeCmd
         
-        $audioDuration = [int]($ffprobeOutput)
+        if ($ffprobeOutput -match '(\d+\.?\d*)') {
+            $audioDuration = [int][float]$matches[1]
+        }
+        else {
+            Write-Host "[ERROR] Could not parse audio duration from: $ffprobeOutput" -ForegroundColor Red
+            $errorCount++
+            continue
+        }
         
         if ($audioDuration -eq 0) {
-            Write-Host "[ERROR] Could not determine audio duration" -ForegroundColor Red
+            Write-Host "[ERROR] Audio duration is 0 seconds" -ForegroundColor Red
             $errorCount++
             continue
         }
@@ -152,7 +179,7 @@ foreach ($audioFile in $audioFiles) {
             $outputVideo
         )
         
-        $process = Start-Process -FilePath "ffmpeg" `
+        $process = Start-Process -FilePath $ffmpegPath `
             -ArgumentList $ffmpegArgs `
             -NoNewWindow `
             -Wait `
