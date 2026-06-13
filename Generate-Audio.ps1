@@ -25,29 +25,22 @@ param(
 # ============================================================================
 
 if (!$TtsKey) {
-    Write-Host "❌ Error: Azure TTS Key not provided" -ForegroundColor Red
+    Write-Host "[ERROR] Azure TTS Key not provided" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Set the key using:"
-    Write-Host '  $env:AZURE_TTS_KEY = "your-key-here"' -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "Or run:"
-    Write-Host '  ./Generate-Audio.ps1 -TtsKey "your-key-here"' -ForegroundColor Yellow
+    Write-Host "Set the key using:" -ForegroundColor Yellow
+    Write-Host '  $env:AZURE_TTS_KEY = "your-key-here"' -ForegroundColor Gray
     exit 1
 }
 
 if (!(Test-Path $DocsFolder)) {
-    Write-Host "❌ Docs folder not found: $DocsFolder" -ForegroundColor Red
+    Write-Host "[ERROR] Docs folder not found: $DocsFolder" -ForegroundColor Red
     exit 1
 }
-
-# ============================================================================
-# SETUP
-# ============================================================================
 
 # Create output directory
 if (!(Test-Path $OutputFolder)) {
     New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null
-    Write-Host "✅ Created output folder: $OutputFolder" -ForegroundColor Green
+    Write-Host "[OK] Created output folder: $OutputFolder" -ForegroundColor Green
 }
 
 $ttsEndpoint = "https://$TtsRegion.tts.speech.microsoft.com/cognitiveservices/v1"
@@ -59,7 +52,7 @@ $headers = @{
 }
 
 # Test connection
-Write-Host "🔗 Testing Azure TTS connection..." -ForegroundColor Cyan
+Write-Host "[INFO] Testing Azure TTS connection..." -ForegroundColor Cyan
 try {
     $testSsml = @"
 <speak version='1.0' xml:lang='en-US'>
@@ -76,12 +69,11 @@ try {
         -ErrorAction Stop
     
     if ($response.StatusCode -eq 200) {
-        Write-Host "✅ Connection successful" -ForegroundColor Green
+        Write-Host "[OK] Connection successful" -ForegroundColor Green
     }
 }
 catch {
-    Write-Host "❌ Connection failed: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "   Check your TTS key and region" -ForegroundColor Yellow
+    Write-Host "[ERROR] Connection failed: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
@@ -92,34 +84,17 @@ catch {
 function Clean-MarkdownText {
     param([string]$Content)
     
-    # Remove code blocks
     $content = $content -replace '```[\s\S]*?```', ''
-    
-    # Remove markdown headers
     $content = $content -replace '#+\s+', ''
-    
-    # Remove bold/italic
     $content = $content -replace '\*\*', ''
     $content = $content -replace '__', ''
     $content = $content -replace '\*', ''
     $content = $content -replace '_', ''
-    
-    # Remove inline code
     $content = $content -replace '`([^`]*)`', '$1'
-    
-    # Remove links
     $content = $content -replace '\[([^\]]+)\]\([^\)]+\)', '$1'
-    
-    # Remove images
     $content = $content -replace '!\[.*?\]\(.*?\)', ''
-    
-    # Remove horizontal rules
     $content = $content -replace '---+', ''
-    
-    # Remove extra whitespace
     $content = $content -replace '\s+', ' '
-    
-    # Remove table formatting
     $content = $content -replace '\|', ' '
     
     return $content.Trim()
@@ -137,8 +112,10 @@ $totalChars = 0
 $processedFiles = 0
 $errorCount = 0
 
-Write-Host "`n📄 Processing documents:" -ForegroundColor Cyan
-Write-Host "========================`n" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Processing documents:" -ForegroundColor Cyan
+Write-Host "====================" -ForegroundColor Cyan
+Write-Host ""
 
 foreach ($file in $mdFiles) {
     $mdContent = Get-Content -Path $file.FullName -Raw
@@ -147,14 +124,12 @@ foreach ($file in $mdFiles) {
     $charCount = $cleanText.Length
     $totalChars += $charCount
     
-    # Alternate between voices for variety
     $voice = if ($processedFiles % 2 -eq 0) { 
-        "en-US-AriaNeural"  # Female voice
+        "en-US-AriaNeural"
     } else { 
-        "en-US-GuyNeural"   # Male voice
+        "en-US-GuyNeural"
     }
     
-    # Create SSML with better formatting
     $ssml = @"
 <speak version='1.0' xml:lang='en-US'>
     <voice name='$voice'>
@@ -167,15 +142,13 @@ foreach ($file in $mdFiles) {
     
     $outputFile = Join-Path $OutputFolder "$($file.BaseName).mp3"
     
-    # Check if already exists
     if (Test-Path $outputFile) {
-        Write-Host "⏭️  Skipping (exists): $($file.Name)" -ForegroundColor Gray
+        Write-Host "[SKIP] Already exists: $($file.Name)" -ForegroundColor Gray
         $processedFiles++
         continue
     }
     
-    Write-Host "🔄 Converting: $($file.Name)" -ForegroundColor Yellow
-    Write-Host "   Voice: $voice | Characters: $charCount" -ForegroundColor Gray
+    Write-Host "[INFO] Converting: $($file.Name)" -ForegroundColor Yellow
     
     try {
         $response = Invoke-WebRequest -Uri $ttsEndpoint `
@@ -187,25 +160,20 @@ foreach ($file in $mdFiles) {
             -ErrorAction Stop
         
         if ($response.StatusCode -eq 200 -and (Test-Path $outputFile)) {
-            $fileSizeKB = (Get-Item $outputFile).Length / 1KB
-            $fileSizeMB = $fileSizeKB / 1024
-            
-            Write-Host "   ✅ Generated: $(Split-Path -Leaf $outputFile)" -ForegroundColor Green
-            Write-Host "   📊 Size: $([math]::Round($fileSizeMB, 1))MB ($([math]::Round($fileSizeKB))KB)" -ForegroundColor Green
-            
+            $sizeMB = (Get-Item $outputFile).Length / 1MB
+            Write-Host "[OK] Generated: $($file.BaseName).mp3 ($([math]::Round($sizeMB, 1))MB)" -ForegroundColor Green
             $processedFiles++
         }
         else {
-            Write-Host "   ❌ Failed to save file" -ForegroundColor Red
+            Write-Host "[ERROR] Failed to save file" -ForegroundColor Red
             $errorCount++
         }
     }
     catch {
-        Write-Host "   ❌ Error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[ERROR] $($_.Exception.Message)" -ForegroundColor Red
         $errorCount++
     }
     
-    # Add delay to avoid rate limiting (500ms between requests)
     if ($processedFiles -lt $mdFiles.Count) {
         Start-Sleep -Milliseconds 500
     }
@@ -215,32 +183,14 @@ foreach ($file in $mdFiles) {
 # SUMMARY
 # ============================================================================
 
-Write-Host "`n📊 SUMMARY" -ForegroundColor Cyan
-Write-Host "==========" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "SUMMARY" -ForegroundColor Cyan
+Write-Host "=======" -ForegroundColor Cyan
 Write-Host "Documents processed: $processedFiles/$($mdFiles.Count)" -ForegroundColor White
 Write-Host "Errors: $errorCount" -ForegroundColor $(if ($errorCount -gt 0) { "Red" } else { "Green" })
 Write-Host ""
-Write-Host "📈 Azure TTS Free Tier Usage:" -ForegroundColor Cyan
-Write-Host "  Characters processed: $totalChars" -ForegroundColor White
-Write-Host "  Free tier limit: 500,000 chars/month" -ForegroundColor White
-Write-Host "  Usage percentage: $(($totalChars / 500000 * 100).ToString('F2'))%" -ForegroundColor White
+Write-Host "Azure TTS Usage:" -ForegroundColor Cyan
+Write-Host "  Characters: $totalChars / 500,000" -ForegroundColor White
+Write-Host "  Percentage: $(($totalChars / 500000 * 100).ToString('F2'))%" -ForegroundColor White
 Write-Host ""
-Write-Host "📁 Output folder: $OutputFolder" -ForegroundColor Green
-
-# List generated files
-$audioFiles = Get-ChildItem -Path $OutputFolder -Filter "*.mp3"
-if ($audioFiles.Count -gt 0) {
-    Write-Host ""
-    Write-Host "✅ Generated audio files:" -ForegroundColor Green
-    foreach ($audio in $audioFiles | Sort-Object Name) {
-        $sizeMB = $audio.Length / 1MB
-        Write-Host "  🎙️  $($audio.Name) ($([math]::Round($sizeMB, 1))MB)" -ForegroundColor White
-    }
-}
-
-if ($errorCount -eq 0) {
-    Write-Host "`n✅ All files generated successfully!" -ForegroundColor Green
-}
-else {
-    Write-Host "`n⚠️  Some files failed. Check errors above." -ForegroundColor Yellow
-}
+Write-Host "[SUCCESS] Audio generation complete!" -ForegroundColor Green
