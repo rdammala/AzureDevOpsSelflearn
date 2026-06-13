@@ -58,6 +58,15 @@ else {
     }
     
     if (!$ffmpegPath) {
+        Write-Host "[WARNING] Checking WinGet packages..." -ForegroundColor Yellow
+        $wingetPath = Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Filter "ffmpeg.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+        if ($wingetPath) {
+            $ffmpegPath = $wingetPath
+            Write-Host "[OK] Found FFmpeg from WinGet: $ffmpegPath" -ForegroundColor Green
+        }
+    }
+    
+    if (!$ffmpegPath) {
         Write-Host "[ERROR] FFmpeg not found in PATH or common locations" -ForegroundColor Red
         Write-Host "Please install FFmpeg:" -ForegroundColor Yellow
         Write-Host "  Option 1: winget install ffmpeg" -ForegroundColor Yellow
