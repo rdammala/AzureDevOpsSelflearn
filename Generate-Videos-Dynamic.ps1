@@ -111,6 +111,11 @@ function Create-ScrollingSlides {
     $cleanText = Clean-MarkdownText -Content $Content
     $lines = $cleanText -split '\.\s+' | Where-Object { $_.Trim().Length -gt 0 }
     
+    if ($lines.Count -eq 0) {
+        Write-Host "[DEBUG] No lines extracted from content" -ForegroundColor Gray
+        return @()
+    }
+    
     $slideNum = 1
     $currentText = ""
     $slidePaths = @()
@@ -121,8 +126,10 @@ function Create-ScrollingSlides {
         if (($currentText.Length + $line.Length + 2) -gt $MaxCharsPerSlide -and $currentText.Length -gt 0) {
             # Create slide with current text
             $slidePath = Create-TextSlide -Text $currentText -SlideNum $slideNum -OutputPath $OutputPath -DocumentName $DocumentName
-            if ($slidePath) { $slidePaths += $slidePath }
-            $slideNum++
+            if ($slidePath -and (Test-Path $slidePath)) { 
+                $slidePaths += $slidePath
+                $slideNum++
+            }
             $currentText = $line
         }
         else {
@@ -138,7 +145,9 @@ function Create-ScrollingSlides {
     # Last slide
     if ($currentText.Length -gt 0) {
         $slidePath = Create-TextSlide -Text $currentText -SlideNum $slideNum -OutputPath $OutputPath -DocumentName $DocumentName
-        if ($slidePath) { $slidePaths += $slidePath }
+        if ($slidePath -and (Test-Path $slidePath)) { 
+            $slidePaths += $slidePath
+        }
     }
     
     return $slidePaths
@@ -154,47 +163,49 @@ function Create-TextSlide {
     
     $outputFile = Join-Path $OutputPath "$('{0:D3}' -f $SlideNum).png"
     
-    # Escape special characters for ImageMagick
-    $escapedText = $Text -replace '"', '\"' -replace '\$', '\$'
+    # Truncate text to fit on slide
+    if ($Text.Length -gt 500) {
+        $Text = $Text.Substring(0, 500) + "..."
+    }
+    
+    # Write text to temporary file
+    $textFile = Join-Path $OutputPath "text_$SlideNum.txt"
+    Set-Content -Path $textFile -Value $Text -Encoding UTF8
     
     try {
-        $magickArgs = @(
+        # Use ImageMagick to create slide with text
+        $args = @(
             "-size", "1920x1080",
             "xc:rgb(25,45,85)",
             "-gravity", "center",
             "-fill", "rgb(100,200,255)",
             "-font", "Arial",
-            "-pointsize", "48",
-            "-annotate", "+0-400", $DocumentName,
-            "-pointsize", "36",
-            "-fill", "white",
-            "-annotate", "+50+0", "-gravity", "northwest",
-            "caption:$escapedText",
+            "-pointsize", "56",
+            "-annotate", "+0-350", $DocumentName,
+            "-pointsize", "32",
+            "-fill", "rgb(200,220,255)",
+            "-gravity", "northwest",
+            "-annotate", "+80+150", $Text,
             $outputFile
         )
         
-        & magick -size 1920x1080 xc:rgb(25,45,85) `
-            -gravity center `
-            -fill rgb(100,200,255) `
-            -font Arial `
-            -pointsize 48 `
-            -annotate +0-400 $DocumentName `
-            -gravity northwest `
-            -fill white `
-            -font Arial `
-            -pointsize 32 `
-            -annotate +80+100 "caption:$escapedText" `
-            $outputFile 2>&1 | Out-Null
+        & magick $args 2>&1 | Out-Null
         
+        # Verify slide was created
         if (Test-Path $outputFile) {
+            Remove-Item -Path $textFile -Force -ErrorAction SilentlyContinue
             return $outputFile
+        }
+        else {
+            Write-Host "[DEBUG] Slide not created: $outputFile" -ForegroundColor Gray
+            return $null
         }
     }
     catch {
-        Write-Host "[DEBUG] Error creating slide: $($_.Exception.Message)" -ForegroundColor Gray
+        Write-Host "[DEBUG] Error: $($_.Exception.Message)" -ForegroundColor Gray
+        Remove-Item -Path $textFile -Force -ErrorAction SilentlyContinue
+        return $null
     }
-    
-    return $null
 }
 
 # ============================================================================
@@ -242,6 +253,7 @@ foreach ($audioFile in $audioFiles) {
         
         if ($slidePaths.Count -eq 0) {
             Write-Host "[ERROR] Failed to create slides" -ForegroundColor Red
+            Write-Host "[DEBUG] Checking temp folder: $(Get-ChildItem $tempSlideFolder -Filter '*.png' -ErrorAction SilentlyContinue | Measure-Object).Count files" -ForegroundColor Gray
             $errorCount++
             continue
         }
