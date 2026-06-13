@@ -137,21 +137,22 @@ foreach ($audioFile in $audioFiles) {
     Write-Host "[INFO] Analyzing audio..." -ForegroundColor Gray
     
     try {
-        $ffprobePath = if ($ffmpegPath) { $ffmpegPath -replace "ffmpeg.exe", "ffprobe.exe" } else { "ffprobe" }
+        $ffprobePath = $ffmpegPath -replace "ffmpeg.exe", "ffprobe.exe"
         
-        $ffprobeOutput = & $ffprobePath -v error -show_entries format=duration -of default=nokey=1 "$audioPath" 2>&1
+        # Get audio duration directly
+        $duration = & $ffprobePath -v error -show_entries format=duration -of default=nokey=1 "$audioPath" 2>&1
         
-        if ($ffprobeOutput -match '(\d+\.?\d*)') {
-            $audioDuration = [int][float]$matches[1]
+        if ($duration) {
+            $audioDuration = [int][float]($duration | Select-Object -First 1)
         }
         else {
-            Write-Host "[ERROR] Could not parse audio duration" -ForegroundColor Red
+            Write-Host "[ERROR] ffprobe returned no output" -ForegroundColor Red
             $errorCount++
             continue
         }
         
-        if ($audioDuration -eq 0) {
-            Write-Host "[ERROR] Audio duration is 0 seconds" -ForegroundColor Red
+        if ($audioDuration -le 0) {
+            Write-Host "[ERROR] Invalid audio duration: $audioDuration" -ForegroundColor Red
             $errorCount++
             continue
         }
