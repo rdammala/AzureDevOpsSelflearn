@@ -96,12 +96,23 @@ function Create-TextSlide {
         [int]$TotalSlides
     )
     
+    # Escape special characters that might break ImageMagick
+    $Text = $Text -replace '"', '\"'
+    $Text = $Text -replace "'", "\'"
+    
     # Wrap text to reasonable line length
     $wrappedText = ""
     $currentLine = ""
-    $maxLineLength = 80
+    $maxLineLength = 70
     
+    $words = @()
     foreach ($word in $Text -split '\s+') {
+        if ($word.Length -gt 0) {
+            $words += $word
+        }
+    }
+    
+    foreach ($word in $words) {
         if (($currentLine.Length + $word.Length + 1) -gt $maxLineLength) {
             if ($currentLine) {
                 $wrappedText += $currentLine + "`n"
@@ -122,41 +133,48 @@ function Create-TextSlide {
     }
     
     try {
-        # Create slide using ImageMagick
-        # Background color varies by slide number for visual distinction
-        $bgColor = "rgb(25,45,85)"
-        if ($SlideNumber % 2 -eq 0) {
-            $bgColor = "rgb(35,55,95)"
-        }
+        # Create a temporary text file to avoid quoting issues
+        $textFile = [System.IO.Path]::GetTempFileName()
+        Set-Content -Path $textFile -Value $wrappedText -Encoding UTF8 -Force
         
-        $textColor = "rgb(200,220,255)"
+        # Use convert (simpler than magick command) with label for text
+        $outputDir = Split-Path $OutputFile
+        $filename = Split-Path $OutputFile -Leaf
         
-        # Use -extent and -gravity to position text properly
+        # Create base image with background
         & magick `
             -size 1920x1080 `
-            "xc:$bgColor" `
+            "xc:rgb(35,60,100)" `
             -gravity North `
-            -pointsize 48 `
-            -fill "rgb(100,200,255)" `
+            -pointsize 44 `
+            -fill "rgb(120,200,255)" `
             -font Arial `
-            -annotate +0+80 "$Title" `
-            -gravity Center `
-            -pointsize 36 `
-            -fill "$textColor" `
-            -annotate +0+0 "$wrappedText" `
+            -annotate +0+60 "$Title" `
             "$OutputFile" `
             2>&1 | Out-Null
         
         if (Test-Path $OutputFile) {
-            return $true
+            # Now add text overlay using -annotate with file
+            & magick "$OutputFile" `
+                -gravity Center `
+                -pointsize 32 `
+                -fill "rgb(200,220,255)" `
+                -annotate +0+50 "$wrappedText" `
+                "$OutputFile" `
+                2>&1 | Out-Null
+            
+            Remove-Item $textFile -Force -ErrorAction SilentlyContinue
+            
+            if (Test-Path $OutputFile) {
+                return $true
+            }
         }
-        else {
-            Write-Host "[DEBUG] Slide not created: $(Split-Path $OutputFile -Leaf)" -ForegroundColor Gray
-            return $false
-        }
+        
+        Remove-Item $textFile -Force -ErrorAction SilentlyContinue
+        return $false
     }
     catch {
-        Write-Host "[DEBUG] ImageMagick error: $($_.Exception.Message)" -ForegroundColor Gray
+        Write-Host "[DEBUG] Error creating slide: $($_.Exception.Message)" -ForegroundColor Gray
         return $false
     }
 }
@@ -315,25 +333,30 @@ foreach ($audioFile in $audioFiles) {
         
         Write-Host "[INFO] Duration: $([math]::Round($duration, 1))s | Slides: $($slidePaths.Count) | Per-slide: $([math]::Round($slideDuration, 2))s" -ForegroundColor Gray
         
-        # Create FFmpeg concat file
+        # Create FFmpeg concat file with absolute paths
         $concatFile = Join-Path $tempSlideFolder "concat.txt"
         $concatLines = @()
         
         foreach ($slide in $slidePaths) {
-            $concatLines += "file '$slide'"
+            # Use absolute path and convert backslashes to forward slashes for FFmpeg
+            $absPath = (Resolve-Path $slide).Path
+            $ffmpegPath = $absPath -replace '\\', '/'
+            
+            $concatLines += "file '$ffmpegPath'"
             $concatLines += "duration $slideDuration"
         }
         
-        # Last slide needs no duration line (or use outpoint)
         Set-Content -Path $concatFile -Value ($concatLines -join "`n") -Encoding UTF8
         
-        Write-Host "[INFO] Encoding video..." -ForegroundColor Yellow
+        Write-Host "[INFO] Encoding video (this may take several minutes)..." -ForegroundColor Yellow
+        
+        # Test: Log the concat file for debugging
+        Write-Host "[DEBUG] Concat file created with $($slidePaths.Count) slides" -ForegroundColor Gray
         
         # Encode with concat demuxer
         $ffmpegArgs = @(
             "-f", "concat",
             "-safe", "0",
-            "-protocol_whitelist", "file,pipe",
             "-i", $concatFile,
             "-i", $audioPath,
             "-c:v", "libx264",
@@ -342,7 +365,7 @@ foreach ($audioFile in $audioFiles) {
             "-pix_fmt", "yuv420p",
             "-c:a", "libmp3lame",
             "-b:a", "256k",
-            "-t", $duration,
+            "-shortest",
             "-y",
             $outputVideo
         )
@@ -372,10 +395,20 @@ foreach ($audioFile in $audioFiles) {
         }
         else {
             Write-Host "[ERROR] FFmpeg failed with code: $($process.ExitCode)" -ForegroundColor Red
+            
             if (Test-Path $errorLog) {
                 $errorContent = Get-Content $errorLog -Raw
-                Write-Host "[DEBUG] First error line: $($errorContent.Split("`n")[0])" -ForegroundColor Gray
+                $firstError = ($errorContent -split "`n" | Where-Object { $_.Trim().Length -gt 0 } | Select-Object -First 3) -join " | "
+                Write-Host "[DEBUG] Error: $firstError" -ForegroundColor Gray
             }
+            
+            if (Test-Path $outputLog) {
+                $outputContent = Get-Content $outputLog -Raw
+                if ($outputContent.Length -gt 200) {
+                    Write-Host "[DEBUG] Output (truncated): $($outputContent.Substring(0, 200))" -ForegroundColor Gray
+                }
+            }
+            
             $errorCount++
         }
     }
