@@ -67,8 +67,10 @@ if (!(Test-Path $OutputFolder)) {
     New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null
 }
 
-$tempSlidesFolder = Join-Path $env:TEMP "dynamic_slides_$$"
-New-Item -ItemType Directory -Path $tempSlidesFolder -Force | Out-Null
+$tempSlidesFolder = Join-Path $env:TEMP "dynamic_slides_$PID"
+if (!(Test-Path $tempSlidesFolder)) {
+    New-Item -ItemType Directory -Path $tempSlidesFolder -Force -ErrorAction Stop | Out-Null
+}
 
 Write-Host "[OK] All prerequisites met" -ForegroundColor Green
 Write-Host ""
