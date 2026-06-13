@@ -101,6 +101,68 @@ function Clean-MarkdownText {
 }
 
 # ============================================================================
+# CREATE NATURAL SSML WITH PROSODY VARIATION
+# ============================================================================
+
+function Create-NaturalSSML {
+    param(
+        [string]$Text,
+        [string]$VoiceName
+    )
+    
+    # Split into paragraphs
+    $paragraphs = $Text -split "\.{2,}|\n{2,}" | Where-Object { $_.Trim().Length -gt 0 }
+    
+    $ssmlContent = ""
+    $sentenceCount = 0
+    
+    foreach ($paragraph in $paragraphs) {
+        # Add paragraph break
+        if ($ssmlContent.Length -gt 0) {
+            $ssmlContent += '<break time="500ms" />'
+        }
+        
+        # Split into sentences
+        $sentences = $paragraph -split '(?<=[.!?])\s+' | Where-Object { $_.Trim().Length -gt 0 }
+        
+        foreach ($sentence in $sentences) {
+            $trimmed = $sentence.Trim()
+            if ($trimmed.Length -eq 0) { continue }
+            
+            $sentenceCount++
+            
+            # Vary prosody based on sentence position (creates natural rhythm)
+            $rate = @(0.98, 1.02, 1.00, 0.97)[($sentenceCount - 1) % 4]
+            $pitch = @(0, 2, -1, 1)[($sentenceCount - 1) % 4]
+            $volume = @(100, 105, 95, 100)[($sentenceCount - 1) % 4]
+            
+            # Add emphasis to sentences with key words
+            $emphasized = $trimmed
+            $emphasized = $emphasized -replace '(critical|important|key|essential|must|required|must-have)', '<emphasis level="strong">$1</emphasis>'
+            $emphasized = $emphasized -replace '(however|therefore|moreover|furthermore)', '<emphasis level="moderate">$1</emphasis>'
+            
+            # Add the sentence with prosody
+            $ssmlContent += "<prosody rate='$rate' pitch='${pitch}%' volume='$volume'>"
+            $ssmlContent += [System.Security.SecurityElement]::Escape($emphasized)
+            $ssmlContent += "</prosody>"
+            
+            # Add slight break between sentences
+            $ssmlContent += '<break time="200ms" />'
+        }
+    }
+    
+    $ssml = @"
+<speak version='1.0' xml:lang='en-US'>
+    <voice name='$VoiceName'>
+        $ssmlContent
+    </voice>
+</speak>
+"@
+    
+    return $ssml
+}
+
+# ============================================================================
 # PROCESS DOCUMENTS
 # ============================================================================
 
@@ -130,15 +192,7 @@ foreach ($file in $mdFiles) {
         "en-US-GuyNeural"
     }
     
-    $ssml = @"
-<speak version='1.0' xml:lang='en-US'>
-    <voice name='$voice'>
-        <prosody rate='0.95' pitch='0%'>
-            $([System.Security.SecurityElement]::Escape($cleanText))
-        </prosody>
-    </voice>
-</speak>
-"@
+    $ssml = Create-NaturalSSML -Text $cleanText -VoiceName $voice
     
     $outputFile = Join-Path $OutputFolder "$($file.BaseName).mp3"
     
