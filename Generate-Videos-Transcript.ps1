@@ -354,7 +354,7 @@ foreach ($audioFile in $audioFiles) {
         if ($process.ExitCode -eq 0 -and (Test-Path $outputVideo)) {
             $videoSizeMB = (Get-Item $outputVideo).Length / 1MB
             
-            if ($videoSizeMB -gt 1.0) {
+            if ($videoSizeMB -gt 0.5) {
                 Write-Host "[OK] Transcript video created: $docName.mp4 ($([math]::Round($videoSizeMB, 1))MB)" -ForegroundColor Green
                 $successCount++
             }
@@ -391,7 +391,7 @@ Write-Host "Errors: $errorCount" -ForegroundColor $(if ($errorCount -gt 0) { "Re
 Write-Host ""
 Write-Host "Output folder: $OutputFolder" -ForegroundColor White
 
-$videoFiles = Get-ChildItem -Path $OutputFolder -Filter "*.mp4" -ErrorAction SilentlyContinue | Where-Object { $_.Length -gt 1000000 }
+$videoFiles = Get-ChildItem -Path $OutputFolder -Filter "*.mp4" -ErrorAction SilentlyContinue | Where-Object { $_.Length -gt 500000 }
 
 if ($videoFiles.Count -gt 0) {
     Write-Host ""
