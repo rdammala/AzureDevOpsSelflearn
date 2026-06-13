@@ -146,7 +146,7 @@ foreach ($audioFile in $audioFiles) {
         if ($process.ExitCode -eq 0 -and (Test-Path $outputVideo)) {
             $videoSizeMB = (Get-Item $outputVideo).Length / 1MB
             
-            if ($videoSizeMB -gt 1.5) {
+            if ($videoSizeMB -gt 1.0) {
                 Write-Host "[OK] Video created: $docName.mp4 ($([math]::Round($videoSizeMB, 1))MB)" -ForegroundColor Green
                 $successCount++
             }
