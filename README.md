@@ -2,6 +2,16 @@
 
 **Complete guide to DevOps architecture, CI/CD pipelines, Infrastructure as Code, and cloud operations.**
 
+## 📍 Where to Find Everything
+
+| What | Where | Purpose |
+|------|-------|---------|
+| **START HERE** | [READY-TO-USE.md](READY-TO-USE.md) | Visual overview, next steps |
+| **5-min setup** | [QUICK-START.md](QUICK-START.md) | Step-by-step instructions |
+| **Technical details** | [GENERATE-AUDIO-VIDEO.md](GENERATE-AUDIO-VIDEO.md) | Full documentation |
+| **Run this script** | [Run-AudioVideo-Generation.ps1](Run-AudioVideo-Generation.ps1) | Master automation |
+| **Learning guide** | [README.md](README.md) | Navigate all documents |
+
 ---
 
 ## 📚 Document Overview
