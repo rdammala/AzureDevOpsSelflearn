@@ -7,6 +7,9 @@
 
 param(
     [Parameter(Mandatory=$false)]
+    [string]$FFmpegPath = "",
+    
+    [Parameter(Mandatory=$false)]
     [string]$AudioFolder = "c:\SupportServices\AzureDevOpsSelflearn\audio",
     
     [Parameter(Mandatory=$false)]
@@ -29,35 +32,40 @@ Write-Host ""
 
 Write-Host "[INFO] Checking prerequisites..." -ForegroundColor Yellow
 
+$ffmpegPath = $null
+
 $ffmpeg = Get-Command ffmpeg -ErrorAction SilentlyContinue
-if (!$ffmpeg) {
+if ($ffmpeg) {
+    $ffmpegPath = $ffmpeg.Source
+    Write-Host "[OK] FFmpeg found in PATH: $ffmpegPath" -ForegroundColor Green
+}
+else {
     Write-Host "[WARNING] FFmpeg not in PATH. Searching common locations..." -ForegroundColor Yellow
-    $commonPaths = @(
+    $searchPaths = @(
+        "C:\ffmpeg\bin\ffmpeg.exe",
         "C:\Program Files\ffmpeg\bin\ffmpeg.exe",
         "C:\Program Files (x86)\ffmpeg\bin\ffmpeg.exe",
         "C:\ProgramData\chocolatey\bin\ffmpeg.exe",
-        "C:\tools\ffmpeg\bin\ffmpeg.exe"
+        "C:\tools\ffmpeg\ffmpeg.exe"
     )
     
-    $ffmpegPath = $null
-    foreach ($path in $commonPaths) {
-        if (Test-Path $path) {
+    foreach ($path in $searchPaths) {
+        if (Test-Path $path -ErrorAction SilentlyContinue) {
             $ffmpegPath = $path
+            Write-Host "[OK] Found FFmpeg at: $ffmpegPath" -ForegroundColor Green
             break
         }
     }
     
     if (!$ffmpegPath) {
-        Write-Host "[ERROR] FFmpeg not found" -ForegroundColor Red
-        Write-Host "Install with: winget install ffmpeg" -ForegroundColor Yellow
+        Write-Host "[ERROR] FFmpeg not found in PATH or common locations" -ForegroundColor Red
+        Write-Host "Please install FFmpeg:" -ForegroundColor Yellow
+        Write-Host "  Option 1: winget install ffmpeg" -ForegroundColor Yellow
+        Write-Host "  Option 2: Download from https://ffmpeg.org/download.html" -ForegroundColor Yellow
+        Write-Host "Then add to PATH or specify full path in script" -ForegroundColor Yellow
         exit 1
     }
 }
-else {
-    $ffmpegPath = $ffmpeg.Source
-}
-
-Write-Host "[OK] FFmpeg found at: $ffmpegPath" -ForegroundColor Green
 
 if (!(Test-Path $AudioFolder)) {
     Write-Host "[ERROR] Audio folder not found: $AudioFolder" -ForegroundColor Red
@@ -120,15 +128,15 @@ foreach ($audioFile in $audioFiles) {
     Write-Host "[INFO] Analyzing audio..." -ForegroundColor Gray
     
     try {
-        $ffprobePath = $ffmpegPath -replace "ffmpeg.exe", "ffprobe.exe"
-        $ffprobeCmd = "`"$ffprobePath`" -v error -show_entries format=duration -of default=nokey=1 `"$audioPath`" 2>&1"
-        $ffprobeOutput = Invoke-Expression $ffprobeCmd
+        $ffprobePath = if ($ffmpegPath) { $ffmpegPath -replace "ffmpeg.exe", "ffprobe.exe" } else { "ffprobe" }
+        
+        $ffprobeOutput = & $ffprobePath -v error -show_entries format=duration -of default=nokey=1 "$audioPath" 2>&1
         
         if ($ffprobeOutput -match '(\d+\.?\d*)') {
             $audioDuration = [int][float]$matches[1]
         }
         else {
-            Write-Host "[ERROR] Could not parse audio duration from: $ffprobeOutput" -ForegroundColor Red
+            Write-Host "[ERROR] Could not parse audio duration" -ForegroundColor Red
             $errorCount++
             continue
         }
@@ -163,6 +171,8 @@ foreach ($audioFile in $audioFiles) {
     Write-Host "[INFO] Creating video with FFmpeg..." -ForegroundColor Yellow
     
     try {
+        $ffmpegCmd = if ($ffmpegPath) { $ffmpegPath } else { "ffmpeg" }
+        
         $ffmpegArgs = @(
             "-f", "concat",
             "-safe", "0",
@@ -179,7 +189,7 @@ foreach ($audioFile in $audioFiles) {
             $outputVideo
         )
         
-        $process = Start-Process -FilePath $ffmpegPath `
+        $process = Start-Process -FilePath $ffmpegCmd `
             -ArgumentList $ffmpegArgs `
             -NoNewWindow `
             -Wait `
