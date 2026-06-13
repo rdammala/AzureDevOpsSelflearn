@@ -44,8 +44,14 @@ else {
 # Check ImageMagick
 $magick = Get-Command magick -ErrorAction SilentlyContinue
 if (!$magick) {
-    Write-Host "[ERROR] ImageMagick not found" -ForegroundColor Red
-    exit 1
+    $magickPath = "C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\magick.exe"
+    if (!(Test-Path $magickPath)) {
+        Write-Host "[ERROR] ImageMagick not found at $magickPath" -ForegroundColor Red
+        exit 1
+    }
+}
+else {
+    $magickPath = $magick.Source
 }
 Write-Host "[OK] ImageMagick found" -ForegroundColor Green
 
@@ -93,7 +99,8 @@ function Create-TextSlide {
         [string]$OutputFile,
         [string]$Title,
         [int]$SlideNumber,
-        [int]$TotalSlides
+        [int]$TotalSlides,
+        [string]$MagickExe
     )
     
     # Escape special characters that might break ImageMagick
@@ -142,7 +149,7 @@ function Create-TextSlide {
         $filename = Split-Path $OutputFile -Leaf
         
         # Create base image with background
-        & magick `
+        & $MagickExe `
             -size 1920x1080 `
             "xc:rgb(35,60,100)" `
             -gravity North `
@@ -155,7 +162,7 @@ function Create-TextSlide {
         
         if (Test-Path $OutputFile) {
             # Now add text overlay using -annotate with file
-            & magick "$OutputFile" `
+            & $MagickExe "$OutputFile" `
                 -gravity Center `
                 -pointsize 32 `
                 -fill "rgb(200,220,255)" `
@@ -183,7 +190,8 @@ function Create-KaraokeSlidesForDocument {
     param(
         [string]$Content,
         [string]$OutputPath,
-        [string]$DocumentTitle
+        [string]$DocumentTitle,
+        [string]$MagickExe
     )
     
     $cleanContent = Clean-Text -Text $Content
@@ -250,7 +258,8 @@ function Create-KaraokeSlidesForDocument {
             -OutputFile $slideFile `
             -Title $DocumentTitle `
             -SlideNumber $slide.Number `
-            -TotalSlides $slides.Count
+            -TotalSlides $slides.Count `
+            -MagickExe $MagickExe
         
         if ($created -and (Test-Path $slideFile)) {
             $slidePaths += $slideFile
@@ -307,7 +316,7 @@ foreach ($audioFile in $audioFiles) {
         
         # Create karaoke slides
         Write-Host "[INFO] Creating slides..." -ForegroundColor Gray
-        $slidePaths = Create-KaraokeSlidesForDocument -Content $mdContent -OutputPath $tempSlideFolder -DocumentTitle $docName
+        $slidePaths = Create-KaraokeSlidesForDocument -Content $mdContent -OutputPath $tempSlideFolder -DocumentTitle $docName -MagickExe $magickPath
         
         if ($slidePaths.Count -eq 0) {
             Write-Host "[ERROR] Failed to create slides" -ForegroundColor Red
