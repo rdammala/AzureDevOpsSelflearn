@@ -2,9 +2,9 @@
 
 > 🌐 **[Main Live Site](https://rdammala.github.io/AzureDevOpsSelflearn/)** — Main hub
 >
-> 🎯 **[INTERVIEW Q&A (100+ QUESTIONS)](https://rdammala.github.io/AzureDevOpsSelflearn/docs/interview-qa/)** — STAR-format questions with filters + 5 step-by-step guides
+> 🎯 **[INTERVIEW Q&A (100+ QUESTIONS)](https://rdammala.github.io/AzureDevOpsSelflearn/interview-qa/)** — STAR-format questions with filters + 5 step-by-step guides
 >
-> 📖 **[Topic Pages (12 Guides)](https://rdammala.github.io/AzureDevOpsSelflearn/docs/)** — DevOps fundamentals
+> 📖 **[Topic Pages (12 Guides)](https://rdammala.github.io/AzureDevOpsSelflearn/)** — DevOps fundamentals
 
 ---
 
