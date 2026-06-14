@@ -120,22 +120,21 @@ foreach ($audioFile in $audioFiles) {
     Write-Host "[INFO] Audio duration: $([math]::Round($duration, 1)) seconds" -ForegroundColor Gray
     
     # Encode video: loop slide image for duration of audio
-    Write-Host "[INFO] Encoding video..." -ForegroundColor Yellow
+    Write-Host "[INFO] Encoding video (this may take a few minutes)..." -ForegroundColor Yellow
     
-    # Use image as video with explicit duration to match audio
+    # Simple approach: loop image with explicit duration matching audio
+    # Don't use -shortest, don't use complex filters, just straightforward looping
     $ffmpegArgs = @(
         "-loop", "1",
         "-i", $slideFile,
         "-i", $audioPath,
         "-c:v", "libx264",
-        "-preset", "fast",
-        "-crf", "22",
-        "-b:v", "5000k",
+        "-preset", "ultrafast",
+        "-crf", "28",
         "-pix_fmt", "yuv420p",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-vf", "format=yuv420p",
-        "-t", [string]::Format("{0:F2}", $duration),
+        "-c:a", "libmp3lame",
+        "-b:a", "256k",
+        "-t", $duration,
         "-y",
         $outputVideo
     )
@@ -154,7 +153,7 @@ foreach ($audioFile in $audioFiles) {
     if ($process.ExitCode -eq 0 -and (Test-Path $outputVideo)) {
         $videoSizeMB = (Get-Item $outputVideo).Length / 1MB
         
-        if ($videoSizeMB -gt 5) {
+        if ($videoSizeMB -gt 1.5) {
             Write-Host "[OK] Video created: $docName.mp4 ($([math]::Round($videoSizeMB, 1))MB)" -ForegroundColor Green
             $successCount++
         }
@@ -193,7 +192,7 @@ Write-Host "Errors: $errorCount" -ForegroundColor $(if ($errorCount -gt 0) { "Re
 Write-Host ""
 Write-Host "Output folder: $OutputFolder" -ForegroundColor White
 
-$videoFiles = Get-ChildItem -Path $OutputFolder -Filter "*.mp4" -ErrorAction SilentlyContinue | Where-Object { $_.Length -gt 5MB }
+$videoFiles = Get-ChildItem -Path $OutputFolder -Filter "*.mp4" -ErrorAction SilentlyContinue | Where-Object { $_.Length -gt 1500000 }
 
 if ($videoFiles.Count -gt 0) {
     Write-Host ""
