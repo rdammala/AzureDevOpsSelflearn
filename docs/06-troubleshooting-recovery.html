@@ -1,0 +1,44 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Troubleshooting & Recovery - Interview Prep</title><style>:root{--primary:#0078d4;--bg-light:#f8f9fa;--text-dark:#2d3748}*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui;color:var(--text-dark);background:var(--bg-light)}nav{background:white;border-bottom:2px solid #e0e0e0;padding:1rem 2rem}nav a{color:var(--primary);font-weight:700;text-decoration:none}.container{max-width:900px;margin:2rem auto;padding:2rem;background:white;border-radius:8px}.page-header{background:linear-gradient(135deg,var(--primary) 0%,#005a9e 100%);color:white;padding:3rem 2rem;text-align:center;margin:-2rem -2rem 2rem -2rem}h1{font-size:2.5rem;margin-bottom:0.5rem}h2{color:var(--primary);margin:2rem 0 1rem;border-bottom:2px solid var(--primary);padding-bottom:0.5rem}pre{background:#f5f5f5;padding:1rem;margin:1rem 0;border-left:4px solid var(--primary);overflow-x:auto;border-radius:4px}ul{margin-left:2rem;margin-bottom:1rem}li{margin-bottom:0.5rem}.nav-buttons{display:flex;gap:1rem;margin-top:3rem}.btn{flex:1;padding:0.75rem;border:none;border-radius:4px;text-decoration:none;font-weight:600;text-align:center}.btn-primary{background:var(--primary);color:white}.btn-secondary{background:#e0e0e0;color:var(--text-dark)}footer{background:#2d3748;color:white;padding:2rem;margin-top:3rem;text-align:center}</style></head><body><nav><div style="max-width:1200px;margin:0 auto"><a href="index.html">📚 DevOps Interview Prep</a></div></nav><div class="page-header"><h1>Troubleshooting & Recovery</h1><p style="font-size:1.1rem;opacity:0.95">Debugging Deployment Failures</p></div><div class="container"><div style="background:#e3f2fd;border:2px solid var(--primary);padding:1.5rem;margin:1.5rem 0;border-radius:4px"><strong>Quick Summary:</strong> Common deployment failures and recovery procedures: Build fails → Fix → Tests fail → Fix → Swap fails → Rollback/Fix.</div><h2>Build Stage Troubleshooting</h2><h3>Build Failed: Compilation Error</h3><pre>error CS0103: Name 'logger' does not exist
+
+Solution:
+1. Run locally: dotnet build Chat/Chat.slnx
+2. Find: logger not imported
+3. Add: using Microsoft.Extensions.Logging;
+4. Commit: git commit -am "Fix: add missing using"
+5. Push: git push origin fix/bug-name
+6. Build auto-retriggers</pre><h3>Build Failed: NuGet Restore Error</h3><pre>NU1101: Unable to find package "SomePackage"
+
+Investigation:
+1. Check package name spelling
+2. Verify in Directory.Packages.props
+3. Check NuGet feed access (nuget.config)
+
+Solution: Fix package version or contact NuGet admin</pre><h3>Build Failed: Test Failure</h3><p>Fix either the code or the test, depending on whether behavior changed intentionally.</p><h2>Deploy Stage: Bicep Failure</h2><h3>Syntax Error</h3><pre>Bicep compilation error: Expected parameter, found 'resource'
+
+Solution:
+1. Run locally: bicep lint template.bicep
+2. Check indentation, brackets
+3. Fix syntax
+4. Deploy via pipeline</pre><h3>Resource Quota Exceeded</h3><pre>The resource quota of 800 has been reached
+
+Solution:
+1. Count current resources
+2. Delete unused resources
+3. Request quota increase from Azure
+4. Re-queue deployment</pre><h2>Deploy Stage: Functional Tests Failure</h2><h3>API Returns 500</h3><pre>Solution:
+1. Check app logs: az webapp log tail -n app-name
+2. Look for exceptions
+3. Fix locally
+4. Commit, push, build auto-retriggers</pre><h3>Connection Timeout</h3><pre>Solution:
+1. Check if app startup is slow
+2. Verify connection strings
+3. Check firewall rules
+4. Increase timeout if needed</pre><h2>Production: Post-Swap Monitoring</h2><h3>Error Rate Spike Detected</h3><pre>IMMEDIATE ACTION: ROLLBACK
+
+az webapp deployment slot swap \
+  -n app-notifications-frontend-prod \
+  -g rg-notifications-frontend-prod \
+  --slot staging
+
+Result: v1.0 back live in <1 second
+Error rate drops immediately</pre><h2>Interview Answer</h2><div style="background:#e3f2fd;border-left:4px solid var(--primary);padding:1rem;margin:1rem 0"><strong>Q: "How do you handle production failures?"</strong><p style="margin-top:0.5rem">We have multiple safety nets. Build fails → pipeline stops. Tests fail → pipeline stops. Functional tests fail → swap blocked. If issues slip past to production, we instantly rollback the slot swap. Old version is back live in < 1 second. Then team investigates, fixes, and re-deploys when ready. The key: assume things will go wrong and design for rapid recovery.</p></div><div class="nav-buttons"><a href="05-bluegreen-deployment.html" class="btn btn-secondary">← Previous</a><a href="07-devops-concepts.html" class="btn btn-primary">Next →</a></div></div><footer><p>&copy; 2026 DevOps Interview Prep</p></footer></body></html>

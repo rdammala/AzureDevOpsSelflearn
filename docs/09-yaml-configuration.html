@@ -1,0 +1,25 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>YAML Configuration - Interview Prep</title><style>:root{--primary:#0078d4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui;color:#2d3748;background:#f8f9fa}nav{background:white;border-bottom:2px solid #e0e0e0;padding:1rem 2rem}nav a{color:var(--primary);font-weight:700;text-decoration:none}.container{max-width:900px;margin:2rem auto;padding:2rem;background:white;border-radius:8px}.page-header{background:linear-gradient(135deg,var(--primary) 0%,#005a9e 100%);color:white;padding:3rem 2rem;text-align:center;margin:-2rem -2rem 2rem -2rem}h1{font-size:2.5rem;margin-bottom:0.5rem}h2{color:var(--primary);margin:2rem 0 1rem;border-bottom:2px solid var(--primary);padding-bottom:0.5rem}pre{background:#f5f5f5;padding:1rem;margin:1rem 0;border-left:4px solid var(--primary);overflow-x:auto;border-radius:4px}ul{margin-left:2rem;margin-bottom:1rem}li{margin-bottom:0.5rem}.note{background:#e3f2fd;border-left:4px solid var(--primary);padding:1rem;margin:1rem 0}.nav-buttons{display:flex;gap:1rem;margin-top:3rem}.btn{flex:1;padding:0.75rem;border:none;border-radius:4px;text-decoration:none;font-weight:600;text-align:center}.btn-primary{background:var(--primary);color:white}.btn-secondary{background:#e0e0e0}footer{background:#2d3748;color:white;padding:2rem;margin-top:3rem;text-align:center}</style></head><body><nav><div style="max-width:1200px;margin:0 auto"><a href="index.html">📚 DevOps Interview Prep</a></div></nav><div class="page-header"><h1>YAML Configuration</h1><p style="font-size:1.1rem;opacity:0.95">Understanding YAML Syntax</p></div><div class="container"><div class="note"><strong>Quick Summary:</strong> YAML is indentation-based (Python-like), spaces matter, maps use key: value, lists use dashes, and comments start with #.</div><h2>Why YAML?</h2><ul><li>Human-readable (not JSON)</li><li>Less syntax noise (no braces/brackets)</li><li>Standard for config files and pipelines</li></ul><h2>Basic Syntax</h2><h3>Comments</h3><pre># This is a comment
+# YAML ignores lines starting with #</pre><h3>Key-Value Pairs (Maps)</h3><pre>name: Rajesh
+age: 10
+location: Seattle</pre><h3>Lists</h3><pre>languages:
+  - C#
+  - PowerShell
+  - JavaScript
+  - Bicep</pre><h3>Nested Objects</h3><pre>person:
+  name: Rajesh Dammala
+  job:
+    title: DevOps Engineer
+    team: SupportServices
+    level: Level 65</pre><h2>Common Mistakes</h2><table style="width:100%;border-collapse:collapse;margin:1rem 0"><tr style="background:var(--primary);color:white"><td style="padding:1rem"><strong>Mistake</strong></td><td style="padding:1rem"><strong>Result</strong></td></tr><tr style="border:1px solid #e0e0e0"><td style="padding:1rem">Mixed spaces & tabs</td><td style="padding:1rem">Parse error</td></tr><tr style="border:1px solid #e0e0e0"><td style="padding:1rem">Inconsistent indentation</td><td style="padding:1rem">Wrong nesting</td></tr><tr style="border:1px solid #e0e0e0"><td style="padding:1rem">No space after colon</td><td style="padding:1rem">name:value won't parse</td></tr><tr style="border:1px solid #e0e0e0"><td style="padding:1rem">Using tabs</td><td style="padding:1rem">Most parsers reject</td></tr></table><h2>Pipeline Example</h2><pre>trigger:
+  - main
+
+pool:
+  vmImage: windows-latest
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+    - script: dotnet build
+      displayName: Build Solution</pre><h2>Interview Answer</h2><div class="note"><strong>Q: "How do you write YAML for pipelines?"</strong><p style="margin-top:0.5rem">YAML is indentation-based, so consistency matters. Use spaces (not tabs). Maps use key: value. Lists use dashes. Pipelines define stages → jobs → steps. Our pipeline has Build (compile), Test (MSTest), and Deploy (Bicep) stages. Each step is a script or predefined task. YAML is easier to read and version-control than clicking through UI.</p></div><div class="nav-buttons"><a href="08-cost-optimization.html" class="btn btn-secondary">← Previous</a><a href="10-onebranch-tools.html" class="btn btn-primary">Next →</a></div></div><footer><p>&copy; 2026 DevOps Interview Prep</p></footer></body></html>

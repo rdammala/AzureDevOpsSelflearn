@@ -1,0 +1,41 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Containers & Orchestration - Interview Prep</title><style>:root{--primary:#0078d4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui;color:#2d3748;background:#f8f9fa}nav{background:white;border-bottom:2px solid #e0e0e0;padding:1rem 2rem}nav a{color:var(--primary);font-weight:700;text-decoration:none}.container{max-width:900px;margin:2rem auto;padding:2rem;background:white;border-radius:8px}.page-header{background:linear-gradient(135deg,var(--primary) 0%,#005a9e 100%);color:white;padding:3rem 2rem;text-align:center;margin:-2rem -2rem 2rem -2rem}h1{font-size:2.5rem;margin-bottom:0.5rem}h2{color:var(--primary);margin:2rem 0 1rem;border-bottom:2px solid var(--primary);padding-bottom:0.5rem}pre{background:#f5f5f5;padding:1rem;margin:1rem 0;border-left:4px solid var(--primary);overflow-x:auto;border-radius:4px}ul{margin-left:2rem;margin-bottom:1rem}li{margin-bottom:0.5rem}.note{background:#e3f2fd;border-left:4px solid var(--primary);padding:1rem;margin:1rem 0}.nav-buttons{display:flex;gap:1rem;margin-top:3rem}.btn{flex:1;padding:0.75rem;border:none;border-radius:4px;text-decoration:none;font-weight:600;text-align:center}.btn-primary{background:var(--primary);color:white}.btn-secondary{background:#e0e0e0}footer{background:#2d3748;color:white;padding:2rem;margin-top:3rem;text-align:center}</style></head><body><nav><div style="max-width:1200px;margin:0 auto"><a href="index.html">📚 DevOps Interview Prep</a></div></nav><div class="page-header"><h1>Containers & Orchestration</h1><p style="font-size:1.1rem;opacity:0.95">Docker, Kubernetes, and Infrastructure Automation</p></div><div class="container"><div class="note"><strong>Quick Summary:</strong> Docker containerizes applications (image → container), Kubernetes orchestrates at scale (deployments, replicas, load balancing), Ansible manages infrastructure as code.</div><h2>Docker Basics</h2><h3>Image vs Container</h3><pre>Image:      Template (blueprint) - like a class
+Container:  Running instance    - like an object
+
+Example:
+Image:      Windows + .NET 8 + Chat.Frontend.dll
+Container:  Running Chat.Frontend listening on port 80</pre><h3>Building an Image</h3><pre>FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY bin/Release/net8.0/publish/ .
+ENTRYPOINT ["dotnet", "Chat.Frontend.dll"]
+
+Build: docker build -t chat-frontend:1.0 .
+Run:   docker run -p 80:80 chat-frontend:1.0</pre><h2>Kubernetes Orchestration</h2><p><strong>The Problem:</strong> Running 100+ containers across 50 servers manually = impossible.</p><p><strong>The Solution:</strong> Kubernetes automates scaling, load balancing, rolling updates.</p><h3>Key Kubernetes Concepts</h3><ul><li><strong>Pod</strong> - Smallest unit (usually 1 container)</li><li><strong>Deployment</strong> - Define how many replicas of pod to run</li><li><strong>Service</strong> - Load balancer + DNS for pods</li><li><strong>ConfigMap</strong> - External config, not hardcoded</li><li><strong>Secret</strong> - Passwords, keys, encrypted</li></ul><h3>Deployment Example</h3><pre>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: chat-frontend
+  template:
+    metadata:
+      labels:
+        app: chat-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: chat-frontend:1.0
+        ports:
+        - containerPort: 80</pre><h2>Ansible for Infrastructure</h2><p><strong>Purpose:</strong> Automation across many servers without agents.</p><pre>---
+- hosts: webservers
+  tasks:
+  - name: Install Git
+    apt:
+      name: git
+      state: present
+  
+  - name: Clone repository
+    git:
+      repo: https://github.com/example/repo.git
+      dest: /app/repo

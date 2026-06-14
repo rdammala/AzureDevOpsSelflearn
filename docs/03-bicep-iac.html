@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Infrastructure as Code (Bicep) - Interview Prep</title><style>:root{--primary:#0078d4;--bg-light:#f8f9fa;--text-dark:#2d3748}*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--text-dark);background:var(--bg-light)}nav{background:white;border-bottom:2px solid #e2e8f0;padding:1rem 2rem}nav a{color:var(--primary);font-weight:700;text-decoration:none}.container{max-width:900px;margin:0 auto;padding:2rem;background:white;margin-top:2rem;border-radius:8px}.page-header{background:linear-gradient(135deg,var(--primary) 0%,#005a9e 100%);color:white;padding:3rem 2rem;text-align:center;margin:-2rem -2rem 2rem -2rem}h1{margin-bottom:0.5rem;font-size:2.5rem}h2{color:var(--primary);margin:2rem 0 1rem;border-bottom:2px solid var(--primary);padding-bottom:0.5rem}pre{background:#f5f5f5;padding:1rem;margin:1rem 0;border-radius:4px;border-left:4px solid var(--primary);overflow-x:auto}table{width:100%;border-collapse:collapse;margin:1rem 0}th{background:var(--primary);color:white;padding:1rem;text-align:left}td{padding:1rem;border-bottom:1px solid #e0e0e0}tr:hover{background:#f8f9fa}.toc{background:white;border:1px solid #e2e8f0;padding:1.5rem;margin:2rem 0;border-radius:4px}.toc a{color:var(--primary);text-decoration:none}.nav-buttons{display:flex;gap:1rem;margin-top:3rem}.btn{flex:1;padding:0.75rem;border:none;border-radius:4px;text-decoration:none;font-weight:600;text-align:center}
+.btn-primary{background:var(--primary);color:white}.btn-secondary{background:#e2e8f0;color:var(--text-dark)}footer{background:#2d3748;color:white;padding:2rem;margin-top:3rem;text-align:center}</style></head><body><nav><div style="max-width:1200px;margin:0 auto"><a href="index.html">📚 DevOps Interview Prep</a></div></nav><div class="page-header"><h1>Infrastructure as Code (Bicep)</h1><p style="font-size:1.1rem;opacity:0.95">Interview-Ready & Learning Guide</p></div><div class="container"><div style="background:#e3f2fd;border:2px solid var(--primary);padding:1.5rem;margin:1.5rem 0;border-radius:4px"><strong>Quick Summary:</strong> Bicep is a DSL that compiles to ARM templates, providing type safety, reusability, and clean syntax for Azure infrastructure.</div><div class="toc"><h3>📖 Topics Covered</h3><ul><li>Why Bicep over ARM Templates</li><li>Bicep Architecture & Syntax</li><li>Creating Reusable Modules</li><li>Two-Level Deployment Model</li><li>Parameter Files & Inheritance</li><li>Interview-Ready Answers</li><li>Best Practices & Key Commands</li></ul></div><h2>1. Why Bicep Over ARM Templates?</h2><p>Bicep provides:</p><ul style="margin-left:2rem"><li><strong>Clean Syntax</strong> - ~30 lines vs 60+ lines for ARM JSON</li><li><strong>Type Safety</strong> - Errors at compile time, not deploy time</li><li><strong>Native String Interpolation</strong> - ${var} instead of concat()</li><li><strong>Modules</strong> - Reusable components (not complex linkedTemplates)</li><li><strong>Easy Diffs</strong> - Git diffs are readable</li></ul><p><strong>Example:</strong> A simple Web App is ~30 lines in Bicep vs ~60 lines in ARM JSON.</p><h2>2. Bicep Syntax Basics</h2><pre>param location string
+param environment string
+param instanceCount int = 1
+
+var appServicePlanName = 'plan-notifications-${environment}'
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
+  name: appServicePlanName
+  location: location
+  sku: {
+    name: 'B1'
+    capacity: instanceCount
+  }
+}
+
+output appServicePlanId string = appServicePlan.id</pre><h2>3. Modules: Reusability</h2><p><strong>Why?</strong> Define infrastructure once, use everywhere. Consistency across all domains.</p><p><strong>Module Example:</strong></p><pre>module frontendApp './modules/webapp.bicep' = {
+  name: 'frontendDeployment'
+  params: {
+    name: 'app-chat-frontend-${environment}'
+    location: location
+    appServicePlanId: appServicePlan.id
+  }
+}</pre><h2>4. Two-Level Deployment</h2><pre>Level 1: envType (subscription-level, shared expensive resources)
+├─ Cosmos DB (shared by dev + staging)
+├─ Key Vault (shared)
+└─ Cost: ~$50/month
+
+Level 2: env (resource-group-level, per-environment sizing)
+├─ Dev App Service: B1 (~$10)
+├─ Staging App Service: B2 (~$50)
+└─ Prod App Service: P1V2 (~$500)</pre><h2>5. Interview-Ready Answer</h2><div style="background:#e3f2fd;border-left:4px solid var(--primary);padding:1rem;margin:1rem 0"><strong>Q: "Why use Bicep instead of ARM templates?"</strong><p style="margin-top:0.5rem">Bicep gives clean syntax vs JSON nightmare, type safety (errors at compile time), native string interpolation, modules for reuse, and easy git diffs. A simple Web App is 30 lines Bicep vs 60 lines JSON. Multiply across 50+ domains = huge maintenance saving.</p></div><div class="nav-buttons"><a href="02-cicd-pipelines.html" class="btn btn-secondary">← Previous</a><a href="04-testing-strategy.html" class="btn btn-primary">Next →</a></div></div><footer><p>&copy; 2026 DevOps Interview Prep | All Rights Reserved</p></footer></body></html>
