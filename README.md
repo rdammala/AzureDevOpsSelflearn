@@ -1,6 +1,6 @@
 # Azure DevOps Self-Learning Library
 
-> 🌐 **[Live Documentation Site](https://rdammala.github.io/AzureDevOpsSelflearn/docs/)** — Click to view interactive HTML pages!
+> 🌐 **[Live Documentation Site](https://rdammala.github.io/AzureDevOpsSelflearn/)** — Click to view interactive HTML pages!
 
 **Complete guide to DevOps architecture, CI/CD pipelines, Infrastructure as Code, and cloud operations.**
 
