@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Workflow & Branching Strategy - Interview Prep</title>
+    <style>
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --text-dark: #2d3748;
+            --text-gray: #4a5568;
+            --border: #e2e8f0;
+            --code-bg: #f5f5f5;
+            --accent-green: #4caf50;
+            --accent-red: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+        }
+
+        nav {
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: -2rem -2rem 2rem -2rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .breadcrumb {
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 2.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+            color: var(--text-dark);
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.5rem;
+            color: var(--text-dark);
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        pre {
+            background: var(--code-bg);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        code {
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: var(--bg-white);
+        }
+
+        table th {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table tr:hover {
+            background: var(--bg-light);
+        }
+
+        .note {
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .note strong {
+            color: var(--primary);
+        }
+
+        .success {
+            background: #e8f5e9;
+            border-left: 4px solid var(--accent-green);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: #fff3e0;
+            border-left: 4px solid #f57c00;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .error {
+            background: #ffebee;
+            border-left: 4px solid var(--accent-red);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .toc {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 4px;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .section-box {
+            background: var(--bg-white);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+        }
+
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            gap: 1rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text-dark);
+        }
+
+        .quick-summary {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f0f4ff 100%);
+            border: 2px solid var(--primary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="nav-title">📚 DevOps Interview Prep</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#topics">Topics</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>Git Workflow & Branching Strategy</h1>
+        <p class="subtitle">Interview-Ready & Learning Guide</p>
+    </div>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> / Topic 1
+        </div>
+
+        <!-- Quick Summary -->
+        <div class="quick-summary">
+            <strong>Quick Summary:</strong> Single master branch model with feature branches, PR-based code review, and automated CI/CD on merge.
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>📖 Table of Contents</h3>
+            <ul>
+                <li><a href="#core-concepts">1. Core Concepts</a></li>
+                <li><a href="#branch-organization">2. Branch Organization</a></li>
+                <li><a href="#workflow-step-by-step">3. Git Workflow Step-by-Step</a></li>
+                <li><a href="#pr-policies">4. PR Policies Enforced</a></li>
+                <li><a href="#special-cases">5. Special Cases</a></li>
+                <li><a href="#interview-answers">6. Interview-Ready Answers</a></li>
+                <li><a href="#workflows">7. Common Workflows</a></li>
+                <li><a href="#best-practices">8. Best Practices</a></li>
+            </ul>
+        </div>
+
+        <!-- Content -->
+        <h2 id="core-concepts">1. Core Concepts</h2>
+
+        <h3>The Big Picture</h3>
+        <pre>Feature Branch → Pull Request → Code Review → Merge to master → Auto CI/CD Triggers
+     ↓              ↓               ↓               ↓                    ↓
+   Local         Remote        Human Review    Protected        Automated Deploy</pre>
+
+        <p><strong>Key Principle:</strong></p>
+        <ul>
+            <li><strong>master is the source of truth</strong> — all production deployments come from commits on master</li>
+            <li><strong>No direct pushes to master</strong> — all changes via Pull Requests (PRs)</li>
+            <li><strong>Linear git history</strong> — squash merge keeps history clean</li>
+        </ul>
+
+        <h2 id="branch-organization">2. Branch Organization</h2>
+
+        <h3>Branching Model: Single Master</h3>
+        <pre>master (protected branch)
+  ↑
+  └─ Feature Branches (developers' work)
+     ├─ fix/chat-spam-filter
+     ├─ feature/notifications-ui
+     ├─ refactor/search-indexing
+     ├─ hotfix/urgent-auth-bug
+     ├─ chore/update-dependencies
+     ├─ docs/api-documentation
+     └─ test/load-testing</pre>
+
+        <h3>Branch Naming Conventions</h3>
+        <p><strong>Format:</strong> <code>&lt;type&gt;/&lt;description&gt;</code></p>
+
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Use Case</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td><code>fix/</code></td>
+                <td>Bug fixes</td>
+                <td><code>fix/null-reference-exception</code></td>
+            </tr>
+            <tr>
+                <td><code>feature/</code></td>
+                <td>New features</td>
+                <td><code>feature/user-authentication</code></td>
+            </tr>
+            <tr>
+                <td><code>refactor/</code></td>
+                <td>Code refactoring</td>
+                <td><code>refactor/optimize-queries</code></td>
+            </tr>
+            <tr>
+                <td><code>hotfix/</code></td>
+                <td>Critical production issues</td>
+                <td><code>hotfix/payment-processing-down</code></td>
+            </tr>
+            <tr>
+                <td><code>chore/</code></td>
+                <td>Maintenance tasks</td>
+                <td><code>chore/update-nuget-packages</code></td>
+            </tr>
+            <tr>
+                <td><code>docs/</code></td>
+                <td>Documentation</td>
+                <td><code>docs/api-endpoints</code></td>
+            </tr>
+            <tr>
+                <td><code>test/</code></td>
+                <td>Testing</td>
+                <td><code>test/performance-benchmark</code></td>
+            </tr>
+        </table>
+
+        <h3>Naming Rules</h3>
+        <ul>
+            <li>Use lowercase</li>
+            <li>Use hyphens, not underscores</li>
+            <li>Descriptive but concise (30 chars max)</li>
+            <li>No spaces or special characters</li>
+        </ul>
+
+        <h2 id="workflow-step-by-step">3. Git Workflow Step-by-Step</h2>
+
+        <h3>Step 1: Create Feature Branch</h3>
+        <pre>git checkout master
+git pull origin master
+git checkout -b fix/chat-message-encoding</pre>
+
+        <p>Branch created locally only. Nothing pushed yet.</p>
+
+        <h3>Step 2: Make Changes & Commit</h3>
+        <pre>git add .
+git commit -m "[Chat] fix: Handle UTF-8 message encoding in API response"</pre>
+
+        <p><strong>Commit Message Convention:</strong></p>
+        <pre>[DOMAIN] type: description
+
+Details here if needed (optional).
+
+- Bullet point 1
+- Bullet point 2</pre>
+
+        <h3>Step 3: Push to Remote</h3>
+        <pre>git push origin fix/chat-message-encoding</pre>
+
+        <p>Azure DevOps will provide a URL to create a pull request.</p>
+
+        <h3>Step 4: Open Pull Request</h3>
+        <p>Via Azure DevOps UI:</p>
+        <ol>
+            <li>Go to repository</li>
+            <li>Click "Pull Requests"</li>
+            <li>Click "New Pull Request"</li>
+            <li>Select <code>fix/chat-message-encoding</code> → <code>master</code></li>
+            <li>Fill in title & description</li>
+            <li>Add reviewers (auto-assigned via <code>owners.txt</code>)</li>
+            <li>Click "Create"</li>
+        </ol>
+
+        <p><strong>PR Title Format:</strong></p>
+        <pre>[Chat] Fix: Properly encode UTF-8 characters in message responses</pre>
+
+        <h3>Step 5: Automated Checks</h3>
+        <p>PR Status Checks Trigger:</p>
+        <pre>✅ Build.NonOfficial.Chat started
+  ├─ Restore NuGet packages
+  ├─ Compile code (warnings-as-errors)
+  ├─ Run unit tests
+  ├─ Run integration tests
+  ├─ Code formatting check
+  └─ Style/lint rules</pre>
+
+        <h3>Step 6: Code Review</h3>
+        <p>Reviewers determined by <code>owners.txt</code> file. They review for:</p>
+        <ul>
+            <li>Logic correctness</li>
+            <li>Convention compliance</li>
+            <li>Security issues</li>
+            <li>Performance implications</li>
+            <li>Test coverage</li>
+        </ul>
+
+        <h3>Step 7: Merge to Master</h3>
+        <p><strong>Requirements Before Merge:</strong></p>
+        <ul>
+            <li>✅ All build/test checks pass</li>
+            <li>✅ Code review approved</li>
+            <li>✅ All comments resolved</li>
+            <li>✅ No conflicts with master</li>
+        </ul>
+
+        <p><strong>Merge Strategy: Squash Merge</strong></p>
+        <p>Multiple commits combined into one when merged to master, keeping history clean.</p>
+
+        <h3>Step 8: Auto CI/CD Triggers</h3>
+        <p>On master merge, the NonOfficial pipeline automatically deploys to dev and staging environments.</p>
+
+        <h2 id="pr-policies">4. PR Policies Enforced</h2>
+
+        <h3>What Blocks Merging?</h3>
+        <table>
+            <tr>
+                <th>Policy</th>
+                <th>Description</th>
+                <th>Why</th>
+            </tr>
+            <tr>
+                <td><strong>Build Passing</strong></td>
+                <td>All compilation + tests must pass</td>
+                <td>Prevent broken code</td>
+            </tr>
+            <tr>
+                <td><strong>Minimum Reviewers</strong></td>
+                <td>At least 1 approval required</td>
+                <td>Ensure peer review</td>
+            </tr>
+            <tr>
+                <td><strong>Code Reviewer</strong></td>
+                <td>Domain owners must review</td>
+                <td>Maintain consistency</td>
+            </tr>
+            <tr>
+                <td><strong>Comment Resolution</strong></td>
+                <td>All comments must be addressed</td>
+                <td>Track feedback</td>
+            </tr>
+            <tr>
+                <td><strong>No Conflicts</strong></td>
+                <td>PR must not have conflicts with master</td>
+                <td>Prevent merge issues</td>
+            </tr>
+        </table>
+
+        <h2 id="special-cases">5. Special Cases</h2>
+
+        <h3>Hotfix (Critical Production Issue)</h3>
+        <pre>git checkout -b hotfix/urgent-payment-bug
+# ...make fix...
+git add . && git commit -m "[Refunds] hotfix: Fix payment processing"
+git push origin hotfix/urgent-payment-bug
+# Open PR (expedited review)
+# ✅ Merged → Auto-deploys to production</pre>
+
+        <h3>Conflict Resolution</h3>
+        <pre>git fetch origin
+git rebase origin/master
+# Resolve conflicts in affected files
+git add .
+git rebase --continue
+git push origin fix/bug-name -f</pre>
+
+        <h2 id="interview-answers">6. Interview-Ready Answers</h2>
+
+        <h3>Q: "Describe your branching strategy"</h3>
+        <div class="note">
+            <strong>Answer:</strong>
+            <p>We use a single master branch model. All work happens on feature branches created from master. The workflow is:</p>
+            <ol>
+                <li>Create feature branch: <code>git checkout -b fix/bug-name</code></li>
+                <li>Commit changes with domain prefix: <code>[Chat] fix: description</code></li>
+                <li>Push and open PR against master</li>
+                <li>Automated builds & tests run</li>
+                <li>Domain reviewers approve</li>
+                <li>Squash merge to master</li>
+                <li>CI/CD auto-triggers</li>
+            </ol>
+            <p>Master is always deployable. No manual releases or release branches. Production version is just a git tag/commit on master.</p>
+            <p><strong>Key principle:</strong> one change = one PR = one squash commit on master</p>
+        </div>
+
+        <h3>Q: "What happens if someone tries to push directly to master?"</h3>
+        <div class="note">
+            <strong>Answer:</strong>
+            <p>Can't. Master is a protected branch. Azure DevOps prevents direct pushes. You must go through PR + review + all checks passing.</p>
+            <p>This ensures:</p>
+            <ul>
+                <li>No broken code reaches master</li>
+                <li>All changes are reviewed</li>
+                <li>Build/tests always pass</li>
+                <li>Clear audit trail</li>
+            </ul>
+        </div>
+
+        <h3>Q: "How do you keep git history clean?"</h3>
+        <div class="note">
+            <strong>Answer:</strong>
+            <p>Squash merge. When a PR is merged, all commits are combined into one. So a PR with 5 commits becomes 1 commit on master.</p>
+            <p><strong>Benefits:</strong></p>
+            <ul>
+                <li>History is linear (easy to read)</li>
+                <li>Each commit represents one feature/fix</li>
+                <li>Easy to revert: <code>git revert &lt;commit&gt;</code></li>
+                <li>Easier to bisect for debugging</li>
+            </ul>
+        </div>
+
+        <h2 id="workflows">7. Common Workflows</h2>
+
+        <h3>Bug Fix Workflow</h3>
+        <pre>git checkout master && git pull
+git checkout -b fix/bug-123
+# ... make fix ...
+git add . && git commit -m "[Domain] fix: Description"
+git push origin fix/bug-123
+# Open PR, wait for review, merge</pre>
+
+        <h3>Feature Development Workflow</h3>
+        <pre>git checkout master && git pull
+git checkout -b feature/new-feature
+# ... develop over multiple commits ...
+# Push each commit as you go
+git push origin feature/new-feature
+# Once ready, open PR (all commits already visible)
+# Review, merge, squash happens</pre>
+
+        <h3>Keeping Branch Updated</h3>
+        <pre>git fetch origin
+git rebase origin/master
+git push origin fix/bug-name -f</pre>
+
+        <h2 id="best-practices">8. Best Practices</h2>
+
+        <h3>✅ DO</h3>
+        <ul>
+            <li>Create branch for each feature/fix</li>
+            <li>Use descriptive branch names</li>
+            <li>Push frequently (don't let branch diverge too much)</li>
+            <li>Keep PRs focused (1 feature = 1 PR)</li>
+            <li>Write clear commit messages</li>
+            <li>Respond to review feedback promptly</li>
+            <li>Delete merged branches</li>
+        </ul>
+
+        <h3>❌ DON'T</h3>
+        <ul>
+            <li>Push directly to master</li>
+            <li>Have multiple features in one PR</li>
+            <li>Ignore build/test failures</li>
+            <li>Use vague commit messages ("fix stuff", "update code")</li>
+            <li>Let branch stay unmerged for weeks</li>
+            <li>Rewrite public history (use rebase only on your branch before PR)</li>
+        </ul>
+
+        <!-- Navigation -->
+        <div class="nav-buttons">
+            <a href="index.html" class="btn btn-secondary">← Back to Topics</a>
+            <a href="02-cicd-pipelines.html" class="btn btn-primary">Next Topic →</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 DevOps Interview Preparation Guide</p>
+        <p>Created for career advancement and continuous learning.</p>
+    </footer>
+</body>
+</html>

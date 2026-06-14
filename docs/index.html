@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Interview Preparation Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --text-dark: #2d3748;
+            --text-gray: #4a5568;
+            --border: #e2e8f0;
+            --accent-yellow: #ffd966;
+            --accent-green: #4caf50;
+            --accent-red: #f44336;
+            --accent-blue: #2196f3;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Header */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: var(--accent-yellow);
+            color: var(--text-dark);
+            padding: 0.75rem 2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 2rem;
+            margin: 3rem 0 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary);
+            color: var(--text-dark);
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: var(--bg-white);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 4px solid var(--primary);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .card-number {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .card p {
+            color: var(--text-gray);
+            margin-bottom: 1rem;
+        }
+
+        .card a {
+            display: inline-block;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .card a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Quick Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+        }
+
+        .footer-links {
+            margin-top: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Badge styles */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-beginner {
+            background: #e8f5e9;
+            color: var(--accent-green);
+        }
+
+        .badge-intermediate {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-advanced {
+            background: #ffebee;
+            color: var(--accent-red);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="nav-title">📚 DevOps Interview Prep</a>
+            <ul class="nav-links">
+                <li><a href="#topics">Topics</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="https://github.com/rdammala/AzureDevOpsSelflearn" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>DevOps Interview Preparation Guide</h1>
+        <p>Master 12 essential DevOps topics with interview-ready explanations, code examples, and real-world scenarios</p>
+        <a href="#topics" class="cta-button">Start Learning</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Quick Stats -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Comprehensive Topics</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">130+</div>
+                <div class="stat-label">Minutes of Content</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Interview Q&A</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">100+</div>
+                <div class="stat-label">Code Examples</div>
+            </div>
+        </div>
+
+        <!-- Topics Section -->
+        <h2 class="section-title" id="topics">Learning Topics</h2>
+        
+        <div class="cards-grid">
+            <!-- Topic 1 -->
+            <div class="card">
+                <div class="card-number">1</div>
+                <h3>Git Workflow & Branching</h3>
+                <p>Master single-master branching strategy, feature branches, PR workflows, and commit conventions.</p>
+                <div>
+                    <span class="badge badge-beginner">Beginner</span>
+                </div>
+                <a href="01-git-workflow.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 2 -->
+            <div class="card">
+                <div class="card-number">2</div>
+                <h3>CI/CD Pipelines</h3>
+                <p>Understand two-tier pipelines (NonOfficial & Official), build stages, deployments, and automation.</p>
+                <div>
+                    <span class="badge badge-intermediate">Intermediate</span>
+                </div>
+                <a href="02-cicd-pipelines.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 3 -->
+            <div class="card">
+                <div class="card-number">3</div>
+                <h3>Infrastructure as Code (Bicep)</h3>
+                <p>Learn Bicep, ARM templates, modules, two-level deployments, and parameter management.</p>
+                <div>
+                    <span class="badge badge-intermediate">Intermediate</span>
+                </div>
+                <a href="03-bicep-iac.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 4 -->
+            <div class="card">
+                <div class="card-number">4</div>
+                <h3>Testing Strategy</h3>
+                <p>Explore unit, integration, and functional testing pyramid with real examples and best practices.</p>
+                <div>
+                    <span class="badge badge-intermediate">Intermediate</span>
+                </div>
+                <a href="04-testing-strategy.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 5 -->
+            <div class="card">
+                <div class="card-number">5</div>
+                <h3>Blue-Green Deployments</h3>
+                <p>Master zero-downtime deployments using slot swaps, testing, and instant rollback capabilities.</p>
+                <div>
+                    <span class="badge badge-intermediate">Intermediate</span>
+                </div>
+                <a href="05-bluegreen-deployment.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 6 -->
+            <div class="card">
+                <div class="card-number">6</div>
+                <h3>Troubleshooting & Recovery</h3>
+                <p>Learn common failure scenarios and recovery procedures for build, deploy, and production issues.</p>
+                <div>
+                    <span class="badge badge-advanced">Advanced</span>
+                </div>
+                <a href="06-troubleshooting-recovery.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 7 -->
+            <div class="card">
+                <div class="card-number">7</div>
+                <h3>DevOps Concepts & Principles</h3>
+                <p>Understand culture, practices, and principles that underpin successful DevOps organizations.</p>
+                <div>
+                    <span class="badge badge-beginner">Beginner</span>
+                </div>
+                <a href="07-devops-concepts.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 8 -->
+            <div class="card">
+                <div class="card-number">8</div>
+                <h3>Cost Optimization</h3>
+                <p>Discover strategies for reducing cloud costs without sacrificing performance or reliability.</p>
+                <div>
+                    <span class="badge badge-intermediate">Intermediate</span>
+                </div>
+                <a href="08-cost-optimization.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 9 -->
+            <div class="card">
+                <div class="card-number">9</div>
+                <h3>YAML Configuration</h3>
+                <p>Master YAML syntax for pipelines, configurations, and infrastructure-as-code definitions.</p>
+                <div>
+                    <span class="badge badge-beginner">Beginner</span>
+                </div>
+                <a href="09-yaml-configuration.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 10 -->
+            <div class="card">
+                <div class="card-number">10</div>
+                <h3>OneBranch vs Other CI/CD Tools</h3>
+                <p>Compare OneBranch, GitHub Actions, GitLab CI, and Jenkins for CI/CD implementation.</p>
+                <div>
+                    <span class="badge badge-advanced">Advanced</span>
+                </div>
+                <a href="10-onebranch-tools.html">Learn More →</a>
+            </div>
+
+            <!-- Topic 11 -->
+            <div class="card">
+                <div class="card-number">11</div>
+                <h3>Containers & Orchestration</h3>
+                <p>Deep dive into Docker, Kubernetes, container networking, and orchestration patterns.</p>
+                <div>
+                    <span class="badge badge-advanced">Advanced</span>
+                </div>
+                <a href="11-containers-orchestration.html">Learn More →</a>
+            </div>
+
+            <!-- Quick Start -->
+            <div class="card">
+                <div class="card-number">⚡</div>
+                <h3>Quick Start Guide</h3>
+                <p>5-minute introduction to DevOps essentials for those just getting started.</p>
+                <div>
+                    <span class="badge badge-beginner">Beginner</span>
+                </div>
+                <a href="quick-start.html">Learn More →</a>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div id="about" style="background: var(--bg-white); padding: 2rem; border-radius: 8px; margin: 3rem 0; box-shadow: var(--shadow);">
+            <h2 style="color: var(--primary); margin-bottom: 1rem;">About This Guide</h2>
+            <p>This comprehensive DevOps interview preparation guide covers essential topics for modern cloud engineering roles. Each topic includes:</p>
+            <ul style="margin-left: 2rem; margin-top: 1rem;">
+                <li><strong>Core Concepts:</strong> Foundational understanding of each topic</li>
+                <li><strong>Real-World Examples:</strong> Practical scenarios from production environments</li>
+                <li><strong>Interview Q&A:</strong> Common interview questions with model answers</li>
+                <li><strong>Code Examples:</strong> Working code snippets in PowerShell, Bicep, C#, and YAML</li>
+                <li><strong>Best Practices:</strong> Industry standards and proven patterns</li>
+                <li><strong>Troubleshooting Guide:</strong> How to diagnose and fix common issues</li>
+            </ul>
+            <p style="margin-top: 1.5rem;">Perfect for:</p>
+            <ul style="margin-left: 2rem;">
+                <li>DevOps Engineers preparing for technical interviews</li>
+                <li>Cloud Engineers looking to strengthen core competencies</li>
+                <li>Teams adopting DevOps practices and CI/CD automation</li>
+                <li>Anyone learning modern infrastructure and deployment strategies</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 DevOps Interview Preparation Guide. All rights reserved.</p>
+        <p>Created for career advancement and continuous learning.</p>
+        <div class="footer-links">
+            <a href="https://github.com/rdammala/AzureDevOpsSelflearn" target="_blank">GitHub Repository</a>
+            <a href="#" target="_blank">YouTube Videos</a>
+            <a href="#" target="_blank">Contact</a>
+        </div>
+    </footer>
+</body>
+</html>

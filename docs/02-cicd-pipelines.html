@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI/CD Pipelines - Interview Prep</title>
+    <style>
+        :root { --primary: #0078d4; --primary-dark: #005a9e; --bg-light: #f8f9fa; --bg-white: #ffffff; --text-dark: #2d3748; --text-gray: #4a5568; --border: #e2e8f0; --code-bg: #f5f5f5; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: var(--text-dark); background: var(--bg-light); }
+        nav { background: var(--bg-white); border-bottom: 2px solid var(--border); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .nav-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { color: var(--text-gray); text-decoration: none; font-weight: 500; }
+        .nav-links a:hover { color: var(--primary); }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .page-header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 3rem 2rem; text-align: center; margin: -2rem -2rem 2rem -2rem; }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.8rem; margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary); }
+        h3 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; }
+        p { margin-bottom: 1rem; }
+        ul, ol { margin-left: 2rem; margin-bottom: 1rem; }
+        pre { background: var(--code-bg); border-left: 4px solid var(--primary); padding: 1rem; overflow-x: auto; margin: 1rem 0; border-radius: 4px; font-family: 'Monaco', 'Courier New', monospace; font-size: 0.85rem; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: white; }
+        table th { background: var(--primary); color: white; padding: 0.75rem; text-align: left; font-weight: 600; }
+        table td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        table tr:hover { background: var(--bg-light); }
+        .note { background: #e3f2fd; border-left: 4px solid var(--primary); padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+        .quick-summary { background: linear-gradient(135deg, #e3f2fd 0%, #f0f4ff 100%); border: 2px solid var(--primary); padding: 1.5rem; margin: 1.5rem 0; border-radius: 4px; font-weight: 500; }
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 3rem; gap: 1rem; }
+        .btn { flex: 1; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; text-decoration: none; font-weight: 600; text-align: center; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--border); color: var(--text-dark); }
+        footer { background: var(--text-dark); color: white; padding: 2rem; margin-top: 3rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="nav-title">📚 DevOps Interview Prep</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#topics">Topics</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>CI/CD Pipelines: Complete Overview</h1>
+        <p style="font-size: 1.1rem; opacity: 0.95;">Interview-Ready & Learning Guide</p>
+    </div>
+
+    <div class="container">
+        <div class="quick-summary">
+            <strong>Quick Summary:</strong> Two-tier pipeline system: NonOfficial (auto CI on master) + Official (manual production deployment with code signing).
+        </div>
+
+        <h2>1. Pipeline Architecture Overview</h2>
+
+        <h3>The Two-Tier System</h3>
+        <pre>NONOFFICIAL PIPELINE                    OFFICIAL PIPELINE
+├─ Build.NonOfficial.Chat               ├─ Build.Official.Chat
+└─ Deploy.NonOfficial.Chat              └─ Deploy.Official.Chat
+
+When triggered: Auto on master commit   When triggered: Manual, any time
+Environment access: Dev + Staging       Environment access: Dev + Staging + Prod
+Signing: Optional                       Signing: Required (code signing)</pre>
+
+        <h3>Pipeline Flow Comparison</h3>
+        <table>
+            <tr>
+                <th>Stage</th>
+                <th>NonOfficial</th>
+                <th>Official</th>
+            </tr>
+            <tr>
+                <td><strong>Trigger</strong></td>
+                <td>Auto on master push</td>
+                <td>Manual queue by team</td>
+            </tr>
+            <tr>
+                <td><strong>Build</strong></td>
+                <td>Compile, test, publish</td>
+                <td>Same + code signing</td>
+            </tr>
+            <tr>
+                <td><strong>Deploy Dev</strong></td>
+                <td>Yes</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td><strong>Deploy Staging</strong></td>
+                <td>Yes</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td><strong>Deploy Prod</strong></td>
+                <td>No (blocked)</td>
+                <td>Yes (after approval)</td>
+            </tr>
+            <tr>
+                <td><strong>Speed</strong></td>
+                <td>~40 min to staging</td>
+                <td>~3 hours (with approvals)</td>
+            </tr>
+        </table>
+
+        <h2>2. Build Stage</h2>
+
+        <h3>Steps in Sequence</h3>
+        <pre>1. Restore NuGet packages
+2. Compile code (warnings-as-errors)
+3. Run unit & integration tests
+4. Publish artifacts
+5. Sign binaries (Official only)
+6. Upload to Azure Artifacts</pre>
+
+        <h3>Timeline Example</h3>
+        <pre>T=0:00    Commit detected
+T=0:10    Compile complete
+T=0:15    Tests complete
+T=0:22    Artifact uploaded</pre>
+
+        <h2>3. Deploy Stage</h2>
+
+        <h3>Deployment to Environments</h3>
+        <pre>Artifact ready
+  ↓
+Deploy to dev
+  ├─ Bicep deployment
+  ├─ Code deployment
+  └─ Functional tests
+  ↓
+Deploy to staging
+  ├─ Same as dev
+  └─ Ready for production review
+  ↓
+Deploy to prod (Official only)
+  ├─ APPROVAL GATE
+  ├─ If approved: deploy
+  └─ If rejected: stop</pre>
+
+        <h2>4. Interview-Ready Answers</h2>
+
+        <h3>Q: "Explain your two-tier pipeline system"</h3>
+        <div class="note">
+            <strong>Answer:</strong>
+            <p><strong>NonOfficial Pipeline:</strong> Runs automatically on every master commit. Builds, tests, and deploys to dev and staging. No code signing required. Gives fast feedback to developers.</p>
+            <p><strong>Official Pipeline:</strong> Manual trigger, signs all binaries with certificates, requires explicit approval before production deployment. Ensures production code is authorized and auditable.</p>
+            <p><strong>Why two pipelines?</strong> Separates fast developer feedback from slow, audited production releases. Dev/staging get new code immediately. Production requires ceremony and approval.</p>
+        </div>
+
+        <h3>Q: "What happens if tests fail?"</h3>
+        <div class="note">
+            <strong>Answer:</strong>
+            <p>Pipeline halts. No deployment happens. Old version stays live (safe). Developer gets notification, reviews logs, fixes code, commits, and build auto-retriggers.</p>
+            <p>The safety: broken code never reaches users because failed builds block deployment.</p>
+        </div>
+
+        <h3>Q: "How do you avoid deployment failures?"</h3>
+        <div class="note">
+            <strong>Answer:</strong>
+            <p>Multiple gates:</p>
+            <ul>
+                <li><strong>Build gate:</strong> Compile + unit tests
+                <li><strong>Integration gate:</strong> Emulator-based integration tests
+                <li><strong>Functional gate:</strong> Full app test against staging environment
+                <li><strong>Approval gate:</strong> Manual approval before prod (Official pipeline only)
+            </ul>
+            <p>Each gate is a checkpoint. Only proceed if previous gate passes.</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="01-git-workflow.html" class="btn btn-secondary">← Previous Topic</a>
+            <a href="03-bicep-iac.html" class="btn btn-primary">Next Topic →</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 DevOps Interview Preparation Guide</p>
+        <p>Created for career advancement and continuous learning.</p>
+    </footer>
+</body>
+</html>
