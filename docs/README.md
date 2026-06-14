@@ -1,5 +1,7 @@
 # 📚 DevOps Interview Preparation - HTML Documentation
 
+> 🌐 **[Live Site](https://rdammala.github.io/AzureDevOpsSelflearn/docs/)** — Click to view online!
+
 Welcome to your interactive DevOps interview preparation guide! This folder contains 13 professional HTML pages covering essential DevOps topics.
 
 ## 🚀 Quick Start
